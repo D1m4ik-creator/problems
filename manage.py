@@ -19,4 +19,6 @@ def main():
 
 
 if __name__ == '__main__':
+    import os
+    os.environ['PGCLIENTENCODING'] = 'utf-8'
     main()
