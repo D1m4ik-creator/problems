@@ -7,8 +7,9 @@ SECRET_KEY = 'django-insecure-$n&mtawz=5qxkw$s(0fvj!^t&a6_piyzhk0*_p9liflc7-i1n(
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "localhost"]
+CORS_ALLOW_ALL_ORIGINS = True
+AUTH_USER_MODEL = "app.User"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -19,7 +20,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework_simplejwt',
     "rest_framework",
-    "problems",
+    "app",
+    'drf_spectacular',
+    'rest_framework_simplejwt.token_blacklist',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -30,6 +34,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'problems.urls'
@@ -65,7 +71,6 @@ DATABASES = {
     }
 }
 
-AUTH_USER_MODEL = 'users.User'
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -103,5 +108,13 @@ SIMPLE_JWT = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Task Management API',
+    'DESCRIPTION': 'API для управления проектами и задачами с AI-помощником',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }

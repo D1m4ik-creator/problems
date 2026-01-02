@@ -1,15 +1,18 @@
-from .models import User
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "telegram_id"]
+        fields = ["id", "username", "password", "email", "telegram_id"]
         read_only_fields = ["id"]
-
+        extra_kwargs = {
+            "telegram_id": {"required": False, "allow_blank": True, "allow_null": True},
+            "username": {"required": False, "allow_blank": True, "allow_null": True},
+        }
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -35,3 +38,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField(help_text="Refresh токен, который нужно отозвать")
