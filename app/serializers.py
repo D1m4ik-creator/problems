@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 
 from .models import TeamMember
-from .service import get_or_create_dynamic_id
+from .service import get_or_create_dynamic_id, get_user_id_by_dynamic_code
 
 
 User = get_user_model()
@@ -61,7 +61,7 @@ class TeamMemberCreateSerializer(serializers.Serializer):
         return TeamMember.objects.create(
             user=invitee,
             team=team,
-            role=TeamMember.Roles.MEMBER,
+            role=TeamMember.Roler.MEMBER,
             is_accepted=False
         )
 
@@ -69,14 +69,12 @@ class TeamMemberCreateSerializer(serializers.Serializer):
         code = attrs.get('dynamic_id')
         team = self.context.get("team")
         request_user = self.context.get("request").user
-
-        invitee = get_user_id_by_dynamic_code(code)
-
-        if not invitee:
+        invitee_id = get_user_id_by_dynamic_code(code)
+        if not invitee_id:
             raise serializers.ValidationError({"dynamic_id": "Код недействителен или устарел."})
 
         try:
-            invitee = User.objects.get(id=invitee)
+            invitee = User.objects.get(id=invitee_id)
         except User.DoesNotExist:
             raise serializers.ValidationError(
                 {"dynamic_id": "Пользователь, владеющий этим кодом, больше не существует."}
@@ -88,5 +86,5 @@ class TeamMemberCreateSerializer(serializers.Serializer):
         if TeamMember.objects.filter(user=invitee, team=team).exists():
             raise serializers.ValidationError("Пользователь уже является участником или приглашен.")
 
-        attrs['invitee_user_object'] = invitee
+        attrs['invitee'] = invitee
         return attrs

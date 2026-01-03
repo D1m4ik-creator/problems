@@ -42,6 +42,8 @@ class Team(models.Model):
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through="TeamMember", related_name="teams")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.name
 
 # Выбор роли в команде
 class TeamMember(models.Model):

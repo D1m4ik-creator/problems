@@ -9,7 +9,6 @@ def get_or_create_dynamic_id(user):
     existing_code = cache.get(cache_key_user)
     if existing_code:
         return existing_code
-
     # Если кода нет, генерируем новый
     attempts = 0
     while attempts < 5:
