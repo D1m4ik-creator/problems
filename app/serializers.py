@@ -26,6 +26,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'password_confirm', 'telegram_id']
+        extra_kwargs = {
+            "telegram_id": {"required": False, "allow_blank": True, "allow_null": True},
+        }
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password_confirm"]:
@@ -39,7 +42,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             username=validated_data['username'],
             email=validated_data.get('email'),
             password=validated_data['password'],
-            telegram_id=validated_data.get('telegram_id', '')
         )
 
         return user

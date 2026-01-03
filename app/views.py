@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import status, permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -10,7 +11,20 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse
 from .serializers import UserSerializer, UserRegisterSerializer, LogoutSerializer, TeamMemberCreateSerializer
 from .permissions import IsTeamOwner
 from .service import get_or_create_dynamic_id
+from .models import Team
 
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        dynamic_id = get_or_create_dynamic_id(request.user)
+
+        return Response({
+            "id": request.user.id,
+            "username": request.user.username,
+            "email": request.user.email,
+            "public_id": dynamic_id
+        })
 
 
 class RegistrationAPIView(APIView):
@@ -112,13 +126,14 @@ class LogoutAPIView(APIView):
 
 
 class TeamViewSet(viewsets.ModelViewSet):
+    queryset = Team.objects.all()
 
-
+    @extend_schema(request=TeamMemberCreateSerializer, responses={201: None})
     @action(detail=True, methods=["post"], url_path='invite-by-dynamic-id')
     def invite_by_dynamic_id(self, request, pk=None):
         team = self.get_object()
 
-        serializer = TeamInviteSerializer(
+        serializer = TeamMemberCreateSerializer(
             data=request.data,
             context={'team': team, 'request': request}
         )
