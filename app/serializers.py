@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 
-from .models import TeamMember
+from .models import TeamMember, Team
 from .service import get_or_create_dynamic_id, get_user_id_by_dynamic_code
 
 
@@ -88,3 +88,31 @@ class TeamMemberCreateSerializer(serializers.Serializer):
 
         attrs['invitee'] = invitee
         return attrs
+
+
+class UserSimpleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', "email"]
+
+
+class TeamMemberSerializer(serializers.ModelSerializer):
+    user = UserSimpleSerializer(read_only=True)
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+
+    class Meta:
+        model = TeamMember
+        fields = ["id", "user", "role", "role_display", "is_accepted"]
+
+
+class TeamSerializers(serializers.ModelSerializer):
+    owner = UserSimpleSerializer(read_only=True)
+    member_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Team
+        fields = ["id", "name", "owner", "created_at", "member_count"]
+
+    def get_member_count(self, obj):
+        return obj.members.count()

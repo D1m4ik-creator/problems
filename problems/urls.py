@@ -13,7 +13,6 @@ from app.views import RegistrationAPIView, LoginAPIView, LogoutAPIView, MeView, 
 router = DefaultRouter()
 router.register(r"teams", TeamViewSet)
 
-
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Работа с командой

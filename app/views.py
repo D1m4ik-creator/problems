@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.db import models
 from rest_framework import status, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -8,10 +9,11 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_spectacular.utils import extend_schema, OpenApiResponse
 
-from .serializers import UserSerializer, UserRegisterSerializer, LogoutSerializer, TeamMemberCreateSerializer
+from .serializers import UserSerializer, UserRegisterSerializer, LogoutSerializer, TeamMemberCreateSerializer, TeamMemberSerializer, TeamSerializers
 from .permissions import IsTeamOwner
 from .service import get_or_create_dynamic_id
-from .models import Team
+from .models import Team, TeamMember
+
 
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -127,6 +129,22 @@ class LogoutAPIView(APIView):
 
 class TeamViewSet(viewsets.ModelViewSet):
     queryset = Team.objects.all()
+    serializer_class = TeamSerializers
+
+    def get_queryset(self):
+        user = self.request.user
+        return Team.objects.filter(
+        models.Q(owner=user) | models.Q(teammember__user=user)
+    ).distinct()
+
+    def perform_create(self, serializer):
+        team = serializer.save(owner=self.request.user)
+
+        TeamMember.objects.create(
+            team=team,
+            user=self.request.user,
+            role="owner"
+        )
 
     @extend_schema(request=TeamMemberCreateSerializer, responses={201: None})
     @action(detail=True, methods=["post"], url_path='invite-by-dynamic-id')
@@ -143,3 +161,10 @@ class TeamViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Приглашение успешно отправлено"}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["get"], url_path="members")
+    def members(self, request, pk=None):
+        team = self.get_object()
+        members = TeamMember.objects.filter(team=team).select_related()
+        serializer = TeamMemberSerializer(members, many=True)
+        return Response(serializer.data)
