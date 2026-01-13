@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 
-from .models import TeamMember, Team
+from .models import TeamMember, Team, Projects, Task
 from .service import get_or_create_dynamic_id, get_user_id_by_dynamic_code
 
 
@@ -116,3 +116,28 @@ class TeamSerializers(serializers.ModelSerializer):
 
     def get_member_count(self, obj):
         return obj.members.count()
+
+
+class ProjectsSerializers(serializers.ModelSerializer):
+    task_count = serializers.IntegerField(source="task.count", read_only=True)
+
+    class Meta:
+        model = Projects
+        fields = ["id", "name", "description", "created_at", "team", "task_count"]
+        read_only_fields = ["team"]
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    status_display = serializers.SerializerMethodField()
+    priority_display = serializers.SerializerMethodField()
+    assigned_to_username = serializers.CharField(source="assigned_to.username", read_only=True)
+
+    class Meta:
+        model = Task
+        fields = ["id", "title","description", "status_display", "priority_display", "status", "priority", "assigned_to", "assigned_to_username", "project", "created_at"]
+
+    def get_status_display(self, obj):
+        return obj.get_status_display()
+
+    def get_priority_display(self, obj):
+        return obj.get_priority_display()

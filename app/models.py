@@ -6,6 +6,9 @@ import time
 import string
 import random
 
+from django.db.models import SET_NULL
+
+
 def generate_unique_id():
     # Генерирует код типа TASK-73A9 (8 символов)
     chars = string.ascii_uppercase + string.digits
@@ -71,3 +74,41 @@ class Projects(models.Model):
 
     def __str__(self):
         return self.name
+
+class Task(models.Model):
+
+    class Status(models.TextChoices):
+        TODO = "todo", "нужно сделать"
+        IN_PROGRESS = "progress", "В работе"
+        REVIEW = "review", "На проверке"
+        DONE = "done", "Готово"
+
+    class Priority(models.TextChoices):
+        LOW = "low", "Низкий"
+        MEDIUM = "medium", "Средний"
+        HIGH = "high", "Высокий"
+        URGENTLY = "urgently", "Срочно"
+    title = models.CharField(max_length=128, verbose_name="Заголовок задачи")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=SET_NULL, null=True, blank=True, related_name="assigned_tasks", verbose_name="Исполнитель")
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.TODO)
+    priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    project = models.ForeignKey("Projects", on_delete=models.CASCADE, related_name="tasks", default=None)
+
+
+    def can_send_to_review(self):
+        return self.status == self.Status.IN_PROGRESS
+
+    def send_to_review(self):
+        if not self.can_send_to_review():
+            raise ValueError('На проверку только из статуса IN_PROGRESS')
+        self.status = self.Status.REVIEW
+        self.save(update_fields=["status", "updated_at"])
+
+    def __str__(self):
+        return f"[{self.project.name}] | {self.title}"

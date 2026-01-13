@@ -7,15 +7,16 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from app.views import RegistrationAPIView, LoginAPIView, LogoutAPIView, MeView, TeamViewSet
+from app.views import RegistrationAPIView, LoginAPIView, LogoutAPIView, MeView, TeamViewSet, TaskViewSet
 
 
 router = DefaultRouter()
 router.register(r"teams", TeamViewSet)
+router.register(r"tasks", TaskViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Работа с командой
+    # Работа с командой и тасками
     path("api/", include(router.urls)),
     # Токены для авторизации SimpleJWT и кастомной регистрации
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

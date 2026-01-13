@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Team, TeamMember,User, Projects
+from .models import Team, TeamMember,User, Projects, Task
 
 
 class TeamMemberInline(admin.TabularInline):
@@ -34,3 +34,4 @@ class TeamMemberAdmin(admin.ModelAdmin):
 
 admin.site.register(User)
 admin.site.register(Projects)
+admin.site.register(Task)
