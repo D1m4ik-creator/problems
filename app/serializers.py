@@ -141,3 +141,4 @@ class TaskSerializer(serializers.ModelSerializer):
 
     def get_priority_display(self, obj):
         return obj.get_priority_display()
+

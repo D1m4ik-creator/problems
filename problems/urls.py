@@ -7,12 +7,13 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
-from app.views import RegistrationAPIView, LoginAPIView, LogoutAPIView, MeView, TeamViewSet, TaskViewSet
+from app.views import RegistrationAPIView, LoginAPIView, LogoutAPIView, MeView, TeamViewSet, TaskViewSet, ProjectsViewSet
 
 
 router = DefaultRouter()
 router.register(r"teams", TeamViewSet)
 router.register(r"tasks", TaskViewSet)
+router.register(r"projects", ProjectsViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

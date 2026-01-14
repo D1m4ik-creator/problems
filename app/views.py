@@ -226,3 +226,12 @@ class TaskViewSet(viewsets.ModelViewSet):
             return Response({'status': task.status})
 
         return Response({'detail': 'Недопустимый статус'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProjectsViewSet(viewsets.ModelViewSet):
+    queryset = Projects.objects.all()
+    serializer_class = ProjectsSerializers
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Projects.objects.filter(team__members=self.request.user).distinct()
